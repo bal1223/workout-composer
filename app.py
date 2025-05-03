@@ -127,6 +127,7 @@ def dashboard_page():
 def generate_workout_page():
     st.header("Generate Workout")
     
+    # Generate form
     with st.form("workout_generator"):
         st.write("Generate a workout based on current constraints")
         
@@ -159,7 +160,7 @@ def generate_workout_page():
         
         generate_button = st.form_submit_button("Generate Workout")
     
-    # Generate workout when button is clicked
+    # Handle workout generation outside the form
     if generate_button:
         with st.spinner("Generating workout..."):
             # Get parameters if they exist
@@ -173,19 +174,18 @@ def generate_workout_page():
             
             workout = generate_workout(**params)
             
-            if not workout:
+            if workout:
+                # Store in session state
+                st.session_state.current_workout = workout
+                st.session_state.saved_workout_id = None
+                st.success("Workout Generated!")
+                logger.info(f"Generated workout with {len(workout.get('components', []))} components")
+            else:
                 st.error("Could not generate a workout with the given constraints. Please try again or adjust constraints.")
-                return
-            
-            # Store in session state
-            st.session_state.current_workout = workout
-            st.session_state.saved_workout_id = None
-            
-            # Show success message
-            st.success("Workout Generated!")
-            
-            # Display workout
-            display_generated_workout(workout)
+    
+    # Display the workout if it exists in session state
+    if 'current_workout' in st.session_state and st.session_state.current_workout:
+        display_generated_workout(st.session_state.current_workout)
 
 def display_generated_workout(workout):
     # Get current day of week
@@ -214,14 +214,22 @@ def display_generated_workout(workout):
     # Action buttons
     col1, col2, col3 = st.columns(3)
     with col1:
-        if st.button("Save Workout"):
-            if st.session_state.current_workout:
-                workout_id = save_workout(st.session_state.current_workout)
-                if workout_id:
-                    st.session_state.saved_workout_id = workout_id
-                    st.success(f"Workout saved! ID: {workout_id}")
-                else:
-                    st.error("Failed to save workout.")
+        if st.button("Save Workout", key="save_workout_btn"):
+            if 'current_workout' in st.session_state and st.session_state.current_workout:
+                try:
+                    workout_id = save_workout(st.session_state.current_workout)
+                    if workout_id:
+                        st.session_state.saved_workout_id = workout_id
+                        st.success(f"Workout saved! ID: {workout_id}")
+                        logger.info(f"Workout saved successfully with ID: {workout_id}")
+                    else:
+                        st.error("Failed to save workout. Check app.log for details.")
+                        logger.error("save_workout returned None")
+                except Exception as e:
+                    st.error(f"Error saving workout: {str(e)}")
+                    logger.error(f"Exception in save_workout: {str(e)}", exc_info=True)
+            else:
+                st.warning("No workout to save. Please generate a workout first.")
     
     with col2:
         if st.button("Regenerate"):
