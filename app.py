@@ -292,8 +292,9 @@ def workout_history_page():
         st.dataframe(workouts_df, hide_index=True)
         
         # Add view button for each workout
-        if st.selectbox("Select a workout to view details:", [""] + [f"Workout {w['id']} - {w['date']}" for w in workouts]):
-            selected_id = int(st.selectbox.split()[1])
+        selected_workout = st.selectbox("Select a workout to view details:", [""] + [f"{w['id']} - {w['date']}" for w in workouts])
+        if selected_workout:
+            selected_id = int(selected_workout.split()[0])
             if st.button("View Details"):
                 workout = load_workout(selected_id)
                 if workout:
