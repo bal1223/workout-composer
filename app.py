@@ -97,14 +97,14 @@ def dashboard_page():
         st.metric(label="Avg Rating", value=f"{stats['avg_rating']}/3")
     
     # Quick actions
-    st.subheader("Quick Actions")
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("Generate New Workout"):
-            st.switch_page("pages/generate_workout.py")
-    with col2:
-        if st.button("View Recent Workouts"):
-            st.switch_page("pages/workout_history.py")
+    # st.subheader("Quick Actions")
+    # col1, col2 = st.columns(2)
+    # with col1:
+    #     if st.button("Generate New Workout"):
+    #         st.switch_page("pages/generate_workout.py")
+    # with col2:
+    #     if st.button("View Recent Workouts"):
+    #         st.switch_page("pages/workout_history.py")
     
     # Recent activity
     st.subheader("Recent Activity")
